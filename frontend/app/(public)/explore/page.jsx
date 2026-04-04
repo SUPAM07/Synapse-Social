@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, MapPin, Users, ArrowRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useConvexQuery } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
+import { apiCall } from "@/lib/api";
 import { createLocationSlug } from "@/lib/location-utils";
 import Image from "next/image";
 
@@ -26,33 +27,52 @@ import EventCard from "@/components/event-card";
 export default function ExplorePage() {
   const router = useRouter();
   const plugin = useRef(Autoplay({ delay: 2000, stopOnInteraction: true }));
+  const { getToken, isSignedIn } = useAuth();
 
-  // Fetch current user for location
-  const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
+  // Fetch current user for location (only if signed in)
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => {
+    if (!isSignedIn) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await getToken();
+        const result = await apiCall("/auth/me", token);
+        if (!cancelled) setCurrentUser(result.data?.user || result.user || null);
+      } catch {
+        // ignore
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isSignedIn, getToken]);
 
-  // Fetch events
-  const { data: featuredEvents, isLoading: loadingFeatured } = useConvexQuery(
-    api.explore.getFeaturedEvents,
-    { limit: 3 }
-  );
+  const defaultCity = currentUser?.location?.city || "Gurugram";
+  const defaultState = currentUser?.location?.state || "Haryana";
 
-  const { data: localEvents, isLoading: loadingLocal } = useConvexQuery(
-    api.explore.getEventsByLocation,
-    {
-      city: currentUser?.location?.city || "Gurugram",
-      state: currentUser?.location?.state || "Haryana",
-      limit: 4,
-    }
-  );
+  // Fetch all events in one request and derive featured/local/popular from them
+  const { data: allEventsData, isLoading } = useConvexQuery("/events", {
+    limit: 50,
+  });
+  const allEvents = allEventsData?.events || allEventsData?.data?.events || [];
 
-  const { data: popularEvents, isLoading: loadingPopular } = useConvexQuery(
-    api.explore.getPopularEvents,
-    { limit: 6 }
-  );
+  // Featured: most recently created, up to 3
+  const featuredEvents = allEvents.slice(0, 3);
 
-  const { data: categoryCounts } = useConvexQuery(
-    api.explore.getCategoryCounts
-  );
+  // Local: events matching user's city (fallback to default)
+  const localEvents = allEvents
+    .filter((e) => e.city === defaultCity)
+    .slice(0, 4);
+
+  // Popular: sorted by registrationCount desc, up to 6
+  const popularEvents = [...allEvents]
+    .sort((a, b) => (b.registrationCount || 0) - (a.registrationCount || 0))
+    .slice(0, 6);
+
+  // Category counts computed client-side
+  const categoryCounts = allEvents.reduce((acc, event) => {
+    if (event.category) acc[event.category] = (acc[event.category] || 0) + 1;
+    return acc;
+  }, {});
 
   const handleEventClick = (slug) => {
     router.push(`/events/${slug}`);
@@ -63,20 +83,15 @@ export default function ExplorePage() {
   };
 
   const handleViewLocalEvents = () => {
-    const city = currentUser?.location?.city || "Gurugram";
-    const state = currentUser?.location?.state || "Haryana";
-    const slug = createLocationSlug(city, state);
+    const slug = createLocationSlug(defaultCity, defaultState);
     router.push(`/explore/${slug}`);
   };
 
   // Format categories with counts
   const categoriesWithCounts = CATEGORIES.map((cat) => ({
     ...cat,
-    count: categoryCounts?.[cat.id] || 0,
+    count: categoryCounts[cat.id] || 0,
   }));
-
-  // Loading state
-  const isLoading = loadingFeatured || loadingLocal || loadingPopular;
 
   if (isLoading) {
     return (
@@ -108,7 +123,7 @@ export default function ExplorePage() {
           >
             <CarouselContent>
               {featuredEvents.map((event) => (
-                <CarouselItem key={event._id}>
+                <CarouselItem key={event.id}>
                   <div
                     className="relative h-[400px] rounded-xl overflow-hidden cursor-pointer"
                     onClick={() => handleEventClick(event.slug)}
@@ -142,7 +157,7 @@ export default function ExplorePage() {
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
                           <span className="text-sm">
-                            {format(event.startDate, "PPP")}
+                            {format(new Date(event.startDate), "PPP")}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -174,7 +189,7 @@ export default function ExplorePage() {
             <div>
               <h2 className="text-3xl font-bold mb-1">Events Near You</h2>
               <p className="text-muted-foreground">
-                Happening in {currentUser?.location?.city || "your area"}
+                Happening in {defaultCity}
               </p>
             </div>
             <Button
@@ -189,7 +204,7 @@ export default function ExplorePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {localEvents.map((event) => (
               <EventCard
-                key={event._id}
+                key={event.id}
                 event={event}
                 variant="compact"
                 onClick={() => handleEventClick(event.slug)}
@@ -237,7 +252,7 @@ export default function ExplorePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {popularEvents.map((event) => (
               <EventCard
-                key={event._id}
+                key={event.id}
                 event={event}
                 variant="list"
                 onClick={() => handleEventClick(event.slug)}
@@ -248,25 +263,21 @@ export default function ExplorePage() {
       )}
 
       {/* Empty State */}
-      {!loadingFeatured &&
-        !loadingLocal &&
-        !loadingPopular &&
-        (!featuredEvents || featuredEvents.length === 0) &&
-        (!localEvents || localEvents.length === 0) &&
-        (!popularEvents || popularEvents.length === 0) && (
-          <Card className="p-12 text-center">
-            <div className="max-w-md mx-auto space-y-4">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold">No events yet</h2>
-              <p className="text-muted-foreground">
-                Be the first to create an event in your area!
-              </p>
-              <Button asChild className="gap-2">
-                <a href="/create-event">Create Event</a>
-              </Button>
-            </div>
-          </Card>
-        )}
+      {!isLoading && allEvents.length === 0 && (
+        <Card className="p-12 text-center">
+          <div className="max-w-md mx-auto space-y-4">
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-2xl font-bold">No events yet</h2>
+            <p className="text-muted-foreground">
+              Be the first to create an event in your area!
+            </p>
+            <Button asChild className="gap-2">
+              <a href="/create-event">Create Event</a>
+            </Button>
+          </div>
+        </Card>
+      )}
     </>
   );
 }
+

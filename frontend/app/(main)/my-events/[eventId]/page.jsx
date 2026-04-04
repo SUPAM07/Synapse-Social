@@ -21,7 +21,6 @@ import {
   Eye,
 } from "lucide-react";
 import { useConvexQuery, useConvexMutation } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -34,6 +33,54 @@ import { getCategoryIcon, getCategoryLabel } from "@/lib/data";
 import QRScannerModal from "../_components/qr-scanner-modal";
 import { AttendeeCard } from "../_components/attendee-card";
 
+/** Derive dashboard stats from an event object and its attendees list. */
+function computeStats(event, registrations) {
+  const confirmed = (registrations || []).filter(
+    (r) => r.status !== "cancelled"
+  );
+  const checkedIn = confirmed.filter((r) => r.checkedIn);
+  const totalRegistrations = confirmed.length;
+  const checkedInCount = checkedIn.length;
+  const pendingCount = totalRegistrations - checkedInCount;
+  const checkInRate =
+    totalRegistrations > 0
+      ? Math.round((checkedInCount / totalRegistrations) * 100)
+      : 0;
+  const totalRevenue =
+    event.ticketType === "paid"
+      ? totalRegistrations * (event.ticketPrice || 0)
+      : 0;
+  const now = Date.now();
+  const startMs = new Date(event.startDate).getTime();
+  const endMs = new Date(event.endDate).getTime();
+  const hoursUntilEvent = Math.max(
+    0,
+    Math.round((startMs - now) / (1000 * 60 * 60))
+  );
+  const isEventToday = (() => {
+    const today = new Date();
+    const eventDay = new Date(event.startDate);
+    return (
+      today.getFullYear() === eventDay.getFullYear() &&
+      today.getMonth() === eventDay.getMonth() &&
+      today.getDate() === eventDay.getDate()
+    );
+  })();
+  const isEventPast = endMs < now;
+
+  return {
+    totalRegistrations,
+    checkedInCount,
+    pendingCount,
+    checkInRate,
+    totalRevenue,
+    capacity: event.capacity,
+    hoursUntilEvent,
+    isEventToday,
+    isEventPast,
+  };
+}
+
 export default function EventDashboardPage() {
   const params = useParams();
   const router = useRouter();
@@ -43,20 +90,28 @@ export default function EventDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showQRScanner, setShowQRScanner] = useState(false);
 
-  // Fetch event dashboard data
-  const { data: dashboardData, isLoading } = useConvexQuery(
-    api.dashboard.getEventDashboard,
-    { eventId }
+  // Fetch event details
+  const { data: eventData, isLoading } = useConvexQuery(
+    eventId ? `/events/${eventId}` : null
   );
+  const event = eventData?.event || eventData;
 
-  // Fetch registrations
-  const { data: registrations, isLoading: loadingRegistrations } =
-    useConvexQuery(api.registrations.getEventRegistrations, { eventId });
+  // Fetch registrations (attendees)
+  const { data: attendeesData, isLoading: loadingRegistrations } =
+    useConvexQuery(eventId ? `/events/${eventId}/attendees` : null);
+  const registrations = attendeesData?.attendees || attendeesData;
+
+  // Compute dashboard stats from fetched data
+  const dashboardData =
+    event
+      ? {
+          event,
+          stats: computeStats(event, registrations),
+        }
+      : null;
 
   // Delete event mutation
-  const { mutate: deleteEvent, isLoading: isDeleting } = useConvexMutation(
-    api.dashboard.deleteEvent
-  );
+  const { mutate: deleteEvent, isLoading: isDeleting } = useConvexMutation();
 
   const handleDelete = async () => {
     const confirmed = window.confirm(
@@ -66,7 +121,7 @@ export default function EventDashboardPage() {
     if (!confirmed) return;
 
     try {
-      await deleteEvent({ eventId });
+      await deleteEvent(`/events/${eventId}`, { method: "DELETE" });
       toast.success("Event deleted successfully");
       router.push("/my-events");
     } catch (error) {
@@ -131,11 +186,14 @@ export default function EventDashboardPage() {
       reg.attendeeEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
       reg.qrCode.toLowerCase().includes(searchQuery.toLowerCase());
 
-    if (activeTab === "all") return matchesSearch && reg.status === "confirmed";
+    // Express uses "active"/"used" for confirmed tickets; "cancelled" for cancelled
+    const isConfirmed = reg.status !== "cancelled";
+
+    if (activeTab === "all") return matchesSearch && isConfirmed;
     if (activeTab === "checked-in")
-      return matchesSearch && reg.checkedIn && reg.status === "confirmed";
+      return matchesSearch && reg.checkedIn && isConfirmed;
     if (activeTab === "pending")
-      return matchesSearch && !reg.checkedIn && reg.status === "confirmed";
+      return matchesSearch && !reg.checkedIn && isConfirmed;
 
     return matchesSearch;
   });
@@ -178,7 +236,7 @@ export default function EventDashboardPage() {
               </Badge>
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                <span>{format(event.startDate, "PPP")}</span>
+                <span>{format(new Date(event.startDate), "PPP")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <MapPin className="w-4 h-4" />
@@ -345,7 +403,7 @@ export default function EventDashboardPage() {
             {filteredRegistrations && filteredRegistrations.length > 0 ? (
               filteredRegistrations.map((registration) => (
                 <AttendeeCard
-                  key={registration._id}
+                  key={registration.id}
                   registration={registration}
                 />
               ))

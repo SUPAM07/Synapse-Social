@@ -18,7 +18,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useConvexQuery } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 
@@ -47,15 +46,17 @@ export default function EventDetailPage() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   // Fetch event details
-  const { data: event, isLoading } = useConvexQuery(api.events.getEventBySlug, {
-    slug: params.slug,
-  });
-
-  // Check if user is already registered
-  const { data: registration } = useConvexQuery(
-    api.registrations.checkRegistration,
-    event?._id ? { eventId: event._id } : "skip"
+  const { data: eventData, isLoading } = useConvexQuery(
+    params.slug ? `/events/slug/${params.slug}` : null
   );
+  const event = eventData?.event || eventData;
+
+  // Check if user is already registered (fetch all tickets and find a match)
+  const { data: ticketsData } = useConvexQuery(
+    user && event?.id ? "/tickets" : null
+  );
+  const tickets = ticketsData?.tickets || ticketsData || [];
+  const registration = tickets.find((t) => t.eventId === event?.id);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -97,7 +98,7 @@ export default function EventDetailPage() {
   }
 
   const isEventFull = event.registrationCount >= event.capacity;
-  const isEventPast = event.endDate < Date.now();
+  const isEventPast = new Date(event.endDate).getTime() < Date.now();
   const isOrganizer = user?.id === event.organizerId;
 
   return (
@@ -117,13 +118,13 @@ export default function EventDetailPage() {
           <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              <span>{format(event.startDate, "EEEE, MMMM dd, yyyy")}</span>
+              <span>{format(new Date(event.startDate), "EEEE, MMMM dd, yyyy")}</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5" />
               <span>
-                {format(event.startDate, "h:mm a")} -{" "}
-                {format(event.endDate, "h:mm a")}
+                {format(new Date(event.startDate), "h:mm a")} -{" "}
+                {format(new Date(event.endDate), "h:mm a")}
               </span>
             </div>
           </div>
@@ -277,7 +278,7 @@ export default function EventDetailPage() {
                       <span className="text-sm">Date</span>
                     </div>
                     <p className="font-semibold text-sm">
-                      {format(event.startDate, "MMM dd")}
+                      {format(new Date(event.startDate), "MMM dd")}
                     </p>
                   </div>
 
@@ -287,7 +288,7 @@ export default function EventDetailPage() {
                       <span className="text-sm">Time</span>
                     </div>
                     <p className="font-semibold text-sm">
-                      {format(event.startDate, "h:mm a")}
+                      {format(new Date(event.startDate), "h:mm a")}
                     </p>
                   </div>
                 </div>

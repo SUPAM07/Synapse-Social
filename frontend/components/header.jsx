@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Building, Crown, Plus, Sparkles, Ticket } from "lucide-react";
 import { SignInButton, useAuth, UserButton, useUser } from "@clerk/nextjs";
-import { Authenticated, Unauthenticated } from "convex/react";
 import { BarLoader } from "react-spinners";
 import { useStoreUser } from "@/hooks/use-store-user";
 import { useOnboarding } from "@/hooks/use-onboarding";
@@ -22,7 +21,7 @@ export default function Header() {
   const { showOnboarding, handleOnboardingComplete, handleOnboardingSkip } =
     useOnboarding();
 
-  const { has } = useAuth();
+  const { has, isSignedIn } = useAuth();
   const hasPro = has?.({ plan: "pro" });
 
   return (
@@ -70,45 +69,45 @@ export default function Header() {
               <Link href="/explore">Explore</Link>
             </Button>
 
-            <Authenticated>
-              {/* Create Event Button */}
-              <Button size="sm" asChild className="flex gap-2 mr-4">
-                <Link href="/create-event">
-                  <Plus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Create Event</span>
-                </Link>
-              </Button>
+            {isSignedIn ? (
+              <>
+                {/* Create Event Button */}
+                <Button size="sm" asChild className="flex gap-2 mr-4">
+                  <Link href="/create-event">
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Create Event</span>
+                  </Link>
+                </Button>
 
-              {/* User Button */}
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "w-9 h-9",
-                  },
-                }}
-              >
-                <UserButton.MenuItems>
-                  <UserButton.Link
-                    label="My Tickets"
-                    labelIcon={<Ticket size={16} />}
-                    href="/my-tickets"
-                  />
-                  <UserButton.Link
-                    label="My Events"
-                    labelIcon={<Building size={16} />}
-                    href="/my-events"
-                  />
-                  <UserButton.Action label="manageAccount" />
-                </UserButton.MenuItems>
-              </UserButton>
-            </Authenticated>
-
-            <Unauthenticated>
+                {/* User Button */}
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-9 h-9",
+                    },
+                  }}
+                >
+                  <UserButton.MenuItems>
+                    <UserButton.Link
+                      label="My Tickets"
+                      labelIcon={<Ticket size={16} />}
+                      href="/my-tickets"
+                    />
+                    <UserButton.Link
+                      label="My Events"
+                      labelIcon={<Building size={16} />}
+                      href="/my-events"
+                    />
+                    <UserButton.Action label="manageAccount" />
+                  </UserButton.MenuItems>
+                </UserButton>
+              </>
+            ) : (
               <SignInButton mode="modal">
                 <Button size="sm">Sign In</Button>
               </SignInButton>
-            </Unauthenticated>
+            )}
           </div>
         </div>
 

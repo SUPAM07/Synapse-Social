@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Ticket, CheckCircle } from "lucide-react";
 import { useConvexMutation } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 
@@ -29,9 +28,7 @@ export default function RegisterModal({ event, isOpen, onClose }) {
   );
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const { mutate: registerForEvent, isLoading } = useConvexMutation(
-    api.registrations.registerForEvent
-  );
+  const { mutate: registerForEvent, isLoading } = useConvexMutation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,10 +39,12 @@ export default function RegisterModal({ event, isOpen, onClose }) {
     }
 
     try {
-      await registerForEvent({
-        eventId: event._id,
-        attendeeName: name,
-        attendeeEmail: email,
+      await registerForEvent(`/tickets/event/${event.id}`, {
+        method: "POST",
+        body: JSON.stringify({
+          attendeeName: name,
+          attendeeEmail: email,
+        }),
       });
 
       setIsSuccess(true);

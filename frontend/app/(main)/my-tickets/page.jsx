@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Calendar, MapPin, Loader2, Ticket } from "lucide-react";
 import { useConvexQuery, useConvexMutation } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import QRCode from "react-qr-code";
 
@@ -25,19 +24,44 @@ export default function MyTicketsPage() {
   const router = useRouter();
   const [selectedTicket, setSelectedTicket] = useState(null);
 
-  const { data: registrations, isLoading } = useConvexQuery(
-    api.registrations.getMyRegistrations
+  const { data: ticketsData, isLoading } = useConvexQuery("/tickets");
+  // Express returns tickets with event fields joined flat; normalise into
+  // the shape expected by the rest of the component tree.
+  const registrations = (ticketsData?.tickets || ticketsData || []).map(
+    (t) => ({
+      ...t,
+      // Provide a nested `event` object from the flat joined columns
+      event: {
+        id: t.eventId,
+        title: t.eventTitle,
+        startDate: t.startDate,
+        endDate: t.endDate,
+        city: t.city,
+        state: t.state,
+        country: t.country,
+        locationType: t.locationType,
+        coverImage: t.coverImage,
+        ticketType: t.ticketType,
+        ticketPrice: t.ticketPrice,
+        themeColor: t.themeColor,
+        category: t.category,
+        capacity: t.capacity,
+        registrationCount: t.registrationCount,
+      },
+    })
   );
 
   const { mutate: cancelRegistration, isLoading: isCancelling } =
-    useConvexMutation(api.registrations.cancelRegistration);
+    useConvexMutation();
 
   const handleCancelRegistration = async (registrationId) => {
     if (!window.confirm("Are you sure you want to cancel this registration?"))
       return;
 
     try {
-      await cancelRegistration({ registrationId });
+      await cancelRegistration(`/tickets/${registrationId}/cancel`, {
+        method: "PATCH",
+      });
       toast.success("Registration cancelled successfully.");
     } catch (error) {
       toast.error(error.message || "Failed to cancel registration");
@@ -56,11 +80,15 @@ export default function MyTicketsPage() {
 
   const upcomingTickets = registrations?.filter(
     (reg) =>
-      reg.event && reg.event.startDate >= now && reg.status === "confirmed"
+      reg.event &&
+      new Date(reg.event.startDate).getTime() >= now &&
+      reg.status !== "cancelled"
   );
   const pastTickets = registrations?.filter(
     (reg) =>
-      reg.event && (reg.event.startDate < now || reg.status === "cancelled")
+      reg.event &&
+      (new Date(reg.event.startDate).getTime() < now ||
+        reg.status === "cancelled")
   );
 
   return (
@@ -81,11 +109,11 @@ export default function MyTicketsPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {upcomingTickets.map((registration) => (
                 <EventCard
-                  key={registration._id}
+                  key={registration.id}
                   event={registration.event}
                   action="ticket"
                   onClick={() => setSelectedTicket(registration)}
-                  onDelete={() => handleCancelRegistration(registration._id)}
+                  onDelete={() => handleCancelRegistration(registration.id)}
                 />
               ))}
             </div>
@@ -100,7 +128,7 @@ export default function MyTicketsPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {pastTickets.map((registration) => (
                 <EventCard
-                  key={registration._id}
+                  key={registration.id}
                   event={registration.event}
                   action={null}
                   className="opacity-60"
@@ -163,7 +191,7 @@ export default function MyTicketsPage() {
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>
-                    {format(selectedTicket.event.startDate, "PPP, h:mm a")}
+                    {format(new Date(selectedTicket.event.startDate), "PPP, h:mm a")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">

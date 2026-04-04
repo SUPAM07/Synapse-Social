@@ -49,7 +49,7 @@ export default function EventCard({
               {event.title}
             </h3>
             <p className="text-xs text-muted-foreground mb-1">
-              {format(event.startDate, "EEE, dd MMM, HH:mm")}
+              {format(new Date(event.startDate), "EEE, dd MMM, HH:mm")}
             </p>
             <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
               <MapPin className="w-3 h-3" />
@@ -111,7 +111,7 @@ export default function EventCard({
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            <span>{format(event.startDate, "PPP")}</span>
+            <span>{format(new Date(event.startDate), "PPP")}</span>
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
@@ -162,7 +162,7 @@ export default function EventCard({
                 className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete(event._id);
+                  onDelete(event.id);
                 }}
               >
                 {action === "event" ? (

@@ -7,7 +7,6 @@ import { Search, MapPin, Calendar, Loader2 } from "lucide-react";
 import { State, City } from "country-state-city";
 import { format } from "date-fns";
 import { useConvexQuery, useConvexMutation } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
 import { createLocationSlug } from "@/lib/location-utils";
 import { getCategoryIcon } from "@/lib/data";
 
@@ -27,17 +26,15 @@ export default function SearchLocationBar() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const searchRef = useRef(null);
 
-  const { data: currentUser, isLoading } = useConvexQuery(
-    api.users.getCurrentUser
-  );
-  const { mutate: updateLocation } = useConvexMutation(
-    api.users.completeOnboarding
-  );
+  const { data: currentUserData, isLoading } = useConvexQuery("/auth/me");
+  const currentUser = currentUserData?.user || currentUserData;
+  const { mutate: updateLocation } = useConvexMutation();
 
-  const { data: searchResults, isLoading: searchLoading } = useConvexQuery(
-    api.search.searchEvents,
-    searchQuery.trim().length >= 2 ? { query: searchQuery, limit: 5 } : "skip"
+  const { data: searchData, isLoading: searchLoading } = useConvexQuery(
+    searchQuery.trim().length >= 2 ? "/events" : null,
+    searchQuery.trim().length >= 2 ? { search: searchQuery, limit: 5 } : null
   );
+  const searchResults = searchData?.events || searchData?.data?.events || [];
 
   const indianStates = useMemo(() => State.getStatesOfCountry("IN"), []);
 
@@ -88,10 +85,12 @@ export default function SearchLocationBar() {
 
   const handleLocationSelect = async (city, state) => {
     try {
-      if (currentUser?.interests && currentUser?.location) {
-        await updateLocation({
-          location: { city, state, country: "India" },
-          interests: currentUser.interests,
+      if (currentUser) {
+        await updateLocation("/auth/profile", {
+          method: "PATCH",
+          body: JSON.stringify({
+            location: { city, state, country: "India" },
+          }),
         });
       }
       const slug = createLocationSlug(city, state);
@@ -141,7 +140,7 @@ export default function SearchLocationBar() {
                 </p>
                 {searchResults.map((event) => (
                   <button
-                    key={event._id}
+                    key={event.id}
                     onClick={() => handleEventClick(event.slug)}
                     className="w-full px-4 py-3 hover:bg-muted/50 text-left transition-colors"
                   >
@@ -156,7 +155,7 @@ export default function SearchLocationBar() {
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            {format(event.startDate, "MMM dd")}
+                            {format(new Date(event.startDate), "MMM dd")}
                           </span>
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3" />

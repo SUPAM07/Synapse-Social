@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import { MapPin, Heart, ArrowRight, ArrowLeft } from "lucide-react";
 import { useConvexMutation } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { State, City } from "country-state-city";
 import {
@@ -35,9 +34,7 @@ export default function OnboardingModal({ isOpen, onClose, onComplete }) {
     country: "India",
   });
 
-  const { mutate: completeOnboarding, isLoading } = useConvexMutation(
-    api.users.completeOnboarding
-  );
+  const { mutate: completeOnboarding, isLoading } = useConvexMutation();
 
   // Get Indian states
   const indianStates = useMemo(() => {
@@ -78,13 +75,17 @@ export default function OnboardingModal({ isOpen, onClose, onComplete }) {
 
   const handleComplete = async () => {
     try {
-      await completeOnboarding({
-        location: {
-          city: location.city,
-          state: location.state,
-          country: location.country,
-        },
-        interests: selectedInterests,
+      await completeOnboarding("/auth/profile", {
+        method: "PATCH",
+        body: JSON.stringify({
+          location: {
+            city: location.city,
+            state: location.state,
+            country: location.country,
+          },
+          interests: selectedInterests,
+          hasCompletedOnboarding: true,
+        }),
       });
       toast.success("Welcome to Spott! 🎉");
       onComplete();
