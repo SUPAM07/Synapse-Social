@@ -1,9 +1,8 @@
 import * as authService from '../services/authService.js';
 import { successResponse, errorResponse } from '../utils/responses.js';
-import { updateProfileSchema } from '../utils/validation.js';
 import { User } from '../models/User.js';
 import { sanitizeUser } from '../utils/helpers.js';
-import { ValidationError } from '../utils/errors.js';
+import { NotFoundError } from '../utils/errors.js';
 
 export async function register(req, res, next) {
   try {
@@ -37,7 +36,9 @@ export async function logout(req, res, next) {
 
 export async function getMe(req, res, next) {
   try {
-    const user = authService.getProfile(req.user.id);
+    const rawUser = User.findById(req.user.id);
+    if (!rawUser) throw new NotFoundError('User not found');
+    const user = sanitizeUser(rawUser);
     return successResponse(res, { user }, 'Profile retrieved');
   } catch (err) {
     next(err);
@@ -57,10 +58,22 @@ export async function refreshToken(req, res, next) {
 
 export async function updateProfile(req, res, next) {
   try {
-    const { error } = updateProfileSchema.validate(req.body);
-    if (error) throw new ValidationError(error.details[0].message);
+    // Flatten a nested `location` object if provided by the frontend
+    const body = { ...req.body };
+    if (body.location && typeof body.location === 'object') {
+      body.city = body.location.city ?? body.city;
+      body.state = body.location.state ?? body.state;
+      body.country = body.location.country ?? body.country;
+      delete body.location;
+    }
 
-    const updated = User.update(req.user.id, req.body);
+    // Map `hasCompletedOnboarding` → `isOnboarded` (both columns are kept in sync)
+    if (typeof body.hasCompletedOnboarding !== 'undefined') {
+      body.isOnboarded = body.hasCompletedOnboarding ? 1 : 0;
+      // also persist in the new column
+    }
+
+    const updated = User.update(req.user.id, body);
     return successResponse(res, { user: sanitizeUser(updated) }, 'Profile updated');
   } catch (err) {
     next(err);

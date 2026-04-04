@@ -26,6 +26,20 @@ export function formatDate(date) {
 
 export function sanitizeUser(user) {
   if (!user) return null;
+  // Remove sensitive fields
   const { passwordHash, ...sanitized } = user;
+  // Normalise the onboarding flag: expose as `hasCompletedOnboarding` (boolean)
+  // while keeping the legacy `isOnboarded` integer for backward compat.
+  sanitized.hasCompletedOnboarding = Boolean(
+    sanitized.hasCompletedOnboarding || sanitized.isOnboarded
+  );
+  // Rebuild nested location object for frontend convenience
+  if (sanitized.city || sanitized.state || sanitized.country) {
+    sanitized.location = {
+      city: sanitized.city || null,
+      state: sanitized.state || null,
+      country: sanitized.country || null,
+    };
+  }
   return sanitized;
 }

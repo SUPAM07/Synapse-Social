@@ -6,8 +6,9 @@ export function initDatabase() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
+      clerkId TEXT UNIQUE,
       email TEXT UNIQUE NOT NULL,
-      passwordHash TEXT NOT NULL,
+      passwordHash TEXT,
       name TEXT NOT NULL,
       imageUrl TEXT,
       city TEXT,
@@ -17,6 +18,7 @@ export function initDatabase() {
       role TEXT DEFAULT 'user',
       freeEventsCreated INTEGER DEFAULT 0,
       isOnboarded INTEGER DEFAULT 0,
+      hasCompletedOnboarding INTEGER DEFAULT 0,
       createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
       updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
     )
@@ -45,6 +47,7 @@ export function initDatabase() {
       ticketType TEXT DEFAULT 'free',
       ticketPrice REAL DEFAULT 0,
       coverImage TEXT,
+      themeColor TEXT DEFAULT '#1e3a8a',
       status TEXT DEFAULT 'published',
       createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
       updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -80,6 +83,17 @@ export function initDatabase() {
       FOREIGN KEY (userId) REFERENCES users(id)
     )
   `);
+
+  // Run migrations for existing databases (ALTER TABLE IF NOT EXISTS is not supported in SQLite,
+  // so we catch errors for columns that already exist)
+  const migrations = [
+    "ALTER TABLE users ADD COLUMN clerkId TEXT UNIQUE",
+    "ALTER TABLE users ADD COLUMN hasCompletedOnboarding INTEGER DEFAULT 0",
+    "ALTER TABLE events ADD COLUMN themeColor TEXT DEFAULT '#1e3a8a'",
+  ];
+  for (const sql of migrations) {
+    try { db.exec(sql); } catch { /* column already exists */ }
+  }
 
   console.log('Database initialized successfully');
   return db;
