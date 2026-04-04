@@ -33,6 +33,7 @@ export default function Home() {
   useEffect(() => {
     fetchEvents();
     fetchDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function Home() {
       if (effCategory) params.category = effCategory;
       const res = await axios.get('/api/events', { params });
       setEvents(res.data.events || []);
-    } catch (e) {
+    } catch {
       setError('Failed to load events. Please ensure the backend is running.');
     } finally {
       setLoading(false);
@@ -62,7 +63,7 @@ export default function Home() {
     try {
       const res = await axios.get('/api/stats/recommendations');
       setRecs(res.data.events || []);
-    } catch (_) {}
+    } catch { /* empty */ }
   }
 
   async function fetchDashboard() {
@@ -72,7 +73,7 @@ export default function Home() {
         categories: r.data?.categories || [],
         upcomingByMonth: r.data?.upcomingByMonth || [],
       });
-    } catch (_) {}
+    } catch { /* empty */ }
   }
 
   const Badge = ({ status }) => {
