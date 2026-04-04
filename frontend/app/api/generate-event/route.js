@@ -55,15 +55,13 @@ Rules:
       cleanedText = cleanedText.replace(/```\n?/g, "");
     }
 
-    console.log(cleanedText);
-
     const eventData = JSON.parse(cleanedText);
 
     return NextResponse.json(eventData);
   } catch (error) {
     console.error("Error generating event:", error);
     return NextResponse.json(
-      { error: "Failed to generate event" + error.message },
+      { error: `Failed to generate event: ${error.message}` },
       { status: 500 }
     );
   }
