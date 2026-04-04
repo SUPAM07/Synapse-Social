@@ -2,20 +2,49 @@
 
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useConvexQuery } from "./use-convex-query";
-import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
+import { apiCall } from "@/lib/api";
 
 // Pages that require onboarding (attendee-centered)
 const ATTENDEE_PAGES = ["/explore", "/events", "/my-tickets", "/profile"];
 
 export function useOnboarding() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
+  const { isSignedIn, getToken } = useAuth();
 
-  const { data: currentUser, isLoading } = useConvexQuery(
-    api.users.getCurrentUser
-  );
+  useEffect(() => {
+    if (!isSignedIn) {
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchUser = async () => {
+      try {
+        const token = await getToken();
+        const result = await apiCall("/auth/me", token);
+        if (!cancelled) {
+          setCurrentUser(result.data?.user || result.user || null);
+        }
+      } catch {
+        // If the backend doesn't know the user yet, treat as no onboarding needed
+        if (!cancelled) setCurrentUser(null);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    fetchUser();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn, getToken]);
 
   useEffect(() => {
     if (isLoading || !currentUser) return;

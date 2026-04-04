@@ -4,7 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import { Loader2, MapPin } from "lucide-react";
 import { useConvexQuery } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
 import { CATEGORIES } from "@/lib/data";
 import { parseLocationSlug } from "@/lib/location-utils";
 import { Badge } from "@/components/ui/badge";
@@ -30,16 +29,15 @@ export default function DynamicExplorePage() {
   }
 
   // Fetch events based on type
-  const { data: events, isLoading } = useConvexQuery(
-    isCategory
-      ? api.explore.getEventsByCategory
-      : api.explore.getEventsByLocation,
+  const { data: eventsData, isLoading } = useConvexQuery(
+    "/events",
     isCategory
       ? { category: slug, limit: 50 }
       : city && state
-        ? { city, state, limit: 50 }
+        ? { city, limit: 50 }
         : "skip"
   );
+  const events = eventsData?.events || eventsData?.data?.events || eventsData || [];
 
   const handleEventClick = (eventSlug) => {
     router.push(`/events/${eventSlug}`);
@@ -81,7 +79,7 @@ export default function DynamicExplorePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
               <EventCard
-                key={event._id}
+                key={event.id}
                 event={event}
                 onClick={() => handleEventClick(event.slug)}
               />
@@ -125,7 +123,7 @@ export default function DynamicExplorePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event) => (
             <EventCard
-              key={event._id}
+              key={event.id}
               event={event}
               onClick={() => handleEventClick(event.slug)}
             />

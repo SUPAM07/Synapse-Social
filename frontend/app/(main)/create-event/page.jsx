@@ -9,8 +9,7 @@ import * as z from "zod";
 import { format } from "date-fns";
 import { State, City } from "country-state-city";
 import { CalendarIcon, Loader2, Sparkles } from "lucide-react";
-import { useConvexMutation, useConvexQuery } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
+import { useConvexMutation } from "@/hooks/use-convex-query";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/nextjs";
 
@@ -72,10 +71,8 @@ export default function CreateEventPage() {
   const { has } = useAuth();
   const hasPro = has?.({ plan: "pro" });
 
-  const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
-  const { mutate: createEvent, isLoading } = useConvexMutation(
-    api.events.createEvent
-  );
+  const { data: currentUser } = { data: null };
+  const { mutate: createEvent, isLoading } = useConvexMutation();
 
   const {
     register,
@@ -166,26 +163,28 @@ export default function CreateEventPage() {
         return;
       }
 
-      await createEvent({
-        title: data.title,
-        description: data.description,
-        category: data.category,
-        tags: [data.category],
-        startDate: start.getTime(),
-        endDate: end.getTime(),
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        locationType: data.locationType,
-        venue: data.venue || undefined,
-        address: data.address || undefined,
-        city: data.city,
-        state: data.state || undefined,
-        country: "India",
-        capacity: data.capacity,
-        ticketType: data.ticketType,
-        ticketPrice: data.ticketPrice || undefined,
-        coverImage: data.coverImage || undefined,
-        themeColor: data.themeColor,
-        hasPro,
+      await createEvent("/events", {
+        method: "POST",
+        body: JSON.stringify({
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          tags: [data.category],
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          locationType: data.locationType,
+          venue: data.venue || undefined,
+          address: data.address || undefined,
+          city: data.city,
+          state: data.state || undefined,
+          country: "India",
+          capacity: data.capacity,
+          ticketType: data.ticketType,
+          ticketPrice: data.ticketPrice || undefined,
+          coverImage: data.coverImage || undefined,
+          themeColor: data.themeColor,
+        }),
       });
 
       toast.success("Event created successfully! 🎉");

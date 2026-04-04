@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useConvexQuery, useConvexMutation } from "@/hooks/use-convex-query";
-import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,8 +13,9 @@ import EventCard from "@/components/event-card";
 export default function MyEventsPage() {
   const router = useRouter();
 
-  const { data: events, isLoading } = useConvexQuery(api.events.getMyEvents);
-  const { mutate: deleteEvent } = useConvexMutation(api.events.deleteEvent);
+  const { data: eventsData, isLoading } = useConvexQuery("/events/me");
+  const events = eventsData?.events || eventsData;
+  const { mutate: deleteEvent } = useConvexMutation();
 
   const handleDelete = async (eventId) => {
     const confirmed = window.confirm(
@@ -25,7 +25,7 @@ export default function MyEventsPage() {
     if (!confirmed) return;
 
     try {
-      await deleteEvent({ eventId });
+      await deleteEvent(`/events/${eventId}`, { method: "DELETE" });
       toast.success("Event deleted successfully");
     } catch (error) {
       toast.error(error.message || "Failed to delete event");
@@ -75,10 +75,10 @@ export default function MyEventsPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events?.map((event) => (
               <EventCard
-                key={event._id}
+                key={event.id}
                 event={event}
                 action="event"
-                onClick={() => handleEventClick(event._id)}
+                onClick={() => handleEventClick(event.id)}
                 onDelete={handleDelete}
               />
             ))}

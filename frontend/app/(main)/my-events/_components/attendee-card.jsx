@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { api } from "@/convex/_generated/api";
 import { useConvexMutation } from "@/hooks/use-convex-query";
 import { format } from "date-fns";
 import { CheckCircle, Circle, Loader2 } from "lucide-react";
@@ -8,17 +7,16 @@ import { toast } from "sonner";
 
 // Attendee Card Component
 export function AttendeeCard({ registration }) {
-  const { mutate: checkInAttendee, isLoading } = useConvexMutation(
-    api.registrations.checkInAttendee
-  );
+  const { mutate: checkInAttendeeMutate, isLoading } = useConvexMutation();
 
   const handleManualCheckIn = async () => {
     try {
-      const result = await checkInAttendee({ qrCode: registration.qrCode });
-      if (result.success) {
+      const result = await checkInAttendeeMutate(
+        `/tickets/${registration.qrCode}/checkin`,
+        { method: "PATCH" }
+      );
+      if (result) {
         toast.success("Attendee checked in successfully");
-      } else {
-        toast.error(result.message);
       }
     } catch (error) {
       toast.error(error.message || "Failed to check in attendee");
@@ -49,8 +47,8 @@ export function AttendeeCard({ registration }) {
             <span>
               {registration.checkedIn ? "⏰ Checked in" : "📅 Registered"}{" "}
               {registration.checkedIn && registration.checkedInAt
-                ? format(registration.checkedInAt, "PPp")
-                : format(registration.registeredAt, "PPp")}
+                ? format(new Date(registration.checkedInAt), "PPp")
+                : format(new Date(registration.registeredAt), "PPp")}
             </span>
             <span className="font-mono">QR: {registration.qrCode}</span>
           </div>
