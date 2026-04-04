@@ -11,7 +11,7 @@ export function errorResponse(res, message = 'An error occurred', statusCode = 5
 export function paginatedResponse(res, data, total, page, limit) {
   return res.status(200).json({
     success: true,
-    data,
+    data: { events: data },
     pagination: {
       total,
       page,

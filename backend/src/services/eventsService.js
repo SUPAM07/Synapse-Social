@@ -5,6 +5,21 @@ import { generateSlug } from '../utils/helpers.js';
 import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
 import { FREE_EVENT_LIMIT } from '../config/constants.js';
 
+/**
+ * Attach organizer details to an event object.
+ * Adds `organizerName`, `organizerImage`, and `organizerClerkId` fields.
+ */
+function enrichEventWithOrganizer(event) {
+  if (!event) return null;
+  const organizer = User.findById(event.organizerId);
+  return {
+    ...event,
+    organizerName: organizer?.name || 'Unknown',
+    organizerImage: organizer?.imageUrl || null,
+    organizerClerkId: organizer?.clerkId || null,
+  };
+}
+
 export function getEvents(filters = {}, pagination = {}) {
   return Event.findAll(filters, pagination);
 }
@@ -12,13 +27,13 @@ export function getEvents(filters = {}, pagination = {}) {
 export function getEventById(id) {
   const event = Event.findById(id);
   if (!event) throw new NotFoundError('Event not found');
-  return event;
+  return enrichEventWithOrganizer(event);
 }
 
 export function getEventBySlug(slug) {
   const event = Event.findBySlug(slug);
   if (!event) throw new NotFoundError('Event not found');
-  return event;
+  return enrichEventWithOrganizer(event);
 }
 
 export function createEvent(organizerId, eventData) {

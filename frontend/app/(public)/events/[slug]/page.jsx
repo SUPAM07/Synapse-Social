@@ -99,7 +99,10 @@ export default function EventDetailPage() {
 
   const isEventFull = event.registrationCount >= event.capacity;
   const isEventPast = new Date(event.endDate).getTime() < Date.now();
-  const isOrganizer = user?.id === event.organizerId;
+  // Compare Clerk user ID against the organizer's Clerk ID (returned by the backend).
+  // Fall back to organizerId for backwards compatibility with legacy JWT tokens.
+  const isOrganizer =
+    user?.id === event.organizerClerkId || user?.id === event.organizerId;
 
   return (
     <div

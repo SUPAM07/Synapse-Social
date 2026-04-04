@@ -17,4 +17,6 @@ export const config = {
   BCRYPT_ROUNDS: parseInt(process.env.BCRYPT_ROUNDS, 10) || 12,
   RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000,
   RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX || 100,
+  CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY || '',
+  CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY || '',
 };
