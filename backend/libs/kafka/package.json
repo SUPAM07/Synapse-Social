@@ -1,0 +1,10 @@
+{
+  "name": "@ai-event-organiser/kafka",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {},
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "dotenv": "^16.4.5"
+  }
+}
