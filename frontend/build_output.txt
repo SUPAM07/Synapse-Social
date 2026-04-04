@@ -1,0 +1,31 @@
+
+> frontend@0.0.0 build
+> vite build
+
+vite v7.1.4 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2082 modules transformed.
+✗ Build failed in 1.58s
+error during build:
+src/App.jsx (21:2): "Github" is not exported by "node_modules/lucide-react/dist/esm/lucide-react.js", imported by "src/App.jsx".
+file: /Users/supamroy/practice/frontend/src/App.jsx:21:2
+
+19:   MapPin, 
+20:   Sparkles,
+21:   Github
+      ^
+22: } from 'lucide-react';
+
+    at getRollupError (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at error (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+    at Module.error (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/node-entry.js:16915:16)
+    at Module.traceVariable (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/node-entry.js:17367:29)
+    at ModuleScope.findVariable (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/node-entry.js:15037:39)
+    at FunctionScope.findVariable (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5626:38)
+    at FunctionBodyScope.findVariable (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5626:38)
+    at Identifier.bind (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5400:40)
+    at CallExpression.bind (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/node-entry.js:2787:28)
+    at CallExpression.bind (file:///Users/supamroy/practice/frontend/node_modules/rollup/dist/es/shared/node-entry.js:12066:15)
