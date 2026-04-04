@@ -27,7 +27,11 @@ export class Ticket {
   static findByUser(userId) {
     const db = getDb();
     return db.prepare(`
-      SELECT t.*, e.title as eventTitle, e.startDate, e.endDate, e.city, e.locationType, e.coverImage
+      SELECT t.*,
+        e.title as eventTitle, e.startDate, e.endDate,
+        e.city, e.state, e.country, e.locationType, e.coverImage,
+        e.ticketType, e.ticketPrice, e.themeColor,
+        e.category, e.capacity, e.registrationCount
       FROM tickets t
       JOIN events e ON t.eventId = e.id
       WHERE t.userId = ?
