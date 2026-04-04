@@ -10,17 +10,18 @@
     "db:init": "node src/models/db.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "@clerk/express": "^2.0.8",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
     "better-sqlite3": "^12.8.0",
     "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "express-rate-limit": "^7.1.5",
-    "joi": "^17.11.0",
-    "nodemailer": "^7.0.11",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "nodemailer": "^7.0.11",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

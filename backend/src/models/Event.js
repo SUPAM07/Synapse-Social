@@ -19,8 +19,8 @@ export class Event {
     db.prepare(`
       INSERT INTO events (id, title, description, slug, organizerId, category, tags,
         startDate, endDate, timezone, locationType, venue, address, city, state, country,
-        capacity, ticketType, ticketPrice, coverImage, status, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        capacity, ticketType, ticketPrice, coverImage, themeColor, status, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, eventData.title, eventData.description, eventData.slug, eventData.organizerId,
       eventData.category, tags, eventData.startDate, eventData.endDate,
@@ -28,7 +28,8 @@ export class Event {
       eventData.venue || null, eventData.address || null, eventData.city || null,
       eventData.state || null, eventData.country || null, eventData.capacity,
       eventData.ticketType || 'free', eventData.ticketPrice || 0,
-      eventData.coverImage || null, eventData.status || 'published', now, now
+      eventData.coverImage || null, eventData.themeColor || '#1e3a8a',
+      eventData.status || 'published', now, now
     );
 
     return this.findById(id);
