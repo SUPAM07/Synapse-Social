@@ -20,7 +20,7 @@ function applyThemeFromStorage() {
       get: () => localStorage.getItem('theme'),
       set: (next) => { localStorage.setItem('theme', next); applyThemeFromStorage(); }
     };
-  } catch (_) {}
+  } catch { /* ignore */ }
 }
 
 applyThemeFromStorage();

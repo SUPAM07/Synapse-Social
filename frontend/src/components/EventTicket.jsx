@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-export default function EventTicket({ registration, user, onDownload, onReady }) {
+export default function EventTicket({ registration, onDownload, onReady }) {
   const ticketRef = useRef(null);
 
-  const downloadTicket = async () => {
+  const downloadTicket = useCallback(async () => {
     if (!ticketRef.current) return;
 
     try {
@@ -42,15 +42,14 @@ export default function EventTicket({ registration, user, onDownload, onReady })
     } catch (error) {
       console.error('Error generating PDF:', error);
     }
-  };
+  }, [onDownload, registration]);
 
   useEffect(() => {
     if (typeof onReady === 'function') onReady(downloadTicket);
-  }, [onReady]);
+  }, [onReady, downloadTicket]);
 
   const event = registration.event;
   const eventDate = new Date(event?.date);
-  const registrationDate = new Date(registration.createdAt);
 
   return (
     <div className="relative">

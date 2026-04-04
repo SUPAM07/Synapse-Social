@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -121,24 +121,24 @@ export default function Dashboard() {
       pdf.save(`${event?.title?.replace(/[^a-zA-Z0-9]/g, '_')}_ticket.pdf`);
       document.body.removeChild(tempDiv);
       showToast('success', 'Ticket downloaded successfully!');
-    } catch (error) {
+    } catch {
       showToast('error', 'Failed to generate ticket.');
     } finally {
       setLoading(false);
     }
   };
 
+  async function loadMyRegs() { const res = await axios.get('/api/registrations/me'); setMine(res.data.registrations || []); }
+  const loadMyEvents = useCallback(async () => { const res = await axios.get('/api/events', { params: { organizer: user?.id } }); setMine(res.data.events || []); }, [user?.id]);
+  async function loadPending() { const res = await axios.get('/api/events', { params: { status: 'pending' } }); setPending(res.data.events || []); }
+  async function loadParticipants(eventId) { const res = await axios.get(`/api/registrations/${eventId}/participants`); setParticipants(res.data.participants || []); }
+
   useEffect(() => {
     if (!user) return;
     if (user.role === 'customer') loadMyRegs();
     if (user.role === 'organizer') loadMyEvents();
     if (user.role === 'admin') loadPending();
-  }, [user]);
-
-  async function loadMyRegs() { const res = await axios.get('/api/registrations/me'); setMine(res.data.registrations || []); }
-  async function loadMyEvents() { const res = await axios.get('/api/events', { params: { organizer: user.id } }); setMine(res.data.events || []); }
-  async function loadPending() { const res = await axios.get('/api/events', { params: { status: 'pending' } }); setPending(res.data.events || []); }
-  async function loadParticipants(eventId) { const res = await axios.get(`/api/registrations/${eventId}/participants`); setParticipants(res.data.participants || []); }
+  }, [user, loadMyEvents]);
 
   async function exportCsv(eventId) {
     try {
@@ -148,7 +148,7 @@ export default function Dashboard() {
       a.href = url; a.download = `participants-${eventId}.csv`; a.click();
       window.URL.revokeObjectURL(url);
       showToast('success', 'CSV exported successfully!');
-    } catch (e) { showToast('error', 'Failed to export CSV.'); }
+    } catch { showToast('error', 'Failed to export CSV.'); }
   }
 
   async function createEvent(e) {
@@ -163,7 +163,7 @@ export default function Dashboard() {
         setTitle(''); setDate(''); setLocation(''); setDescription(''); setPoster(null);
         await loadMyEvents();
         showToast('success', 'Event submitted for approval!');
-    } catch (error) { showToast('error', 'Failed to create event.'); }
+    } catch { showToast('error', 'Failed to create event.'); }
     finally { setLoading(false); }
   }
 

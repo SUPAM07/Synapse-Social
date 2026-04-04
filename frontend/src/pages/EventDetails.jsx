@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -35,11 +35,7 @@ export default function EventDetails() {
     setTimeout(() => setToast({ open: false, type: 'info', message: '' }), 5000);
   };
 
-  useEffect(() => {
-    load();
-  }, [id, user]);
-
-  async function load() {
+  const load = useCallback(async function load() {
     setLoading(true);
     try {
       const [e, r] = await Promise.all([
@@ -58,7 +54,11 @@ export default function EventDetails() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id, user]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function register() {
     try {
