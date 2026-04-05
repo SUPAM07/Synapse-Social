@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "description": "Shared utilities for EMS microservices",
   "main": "index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -14,5 +19,12 @@
     "jsonwebtoken": "^9.0.2",
     "kafkajs": "^2.2.4",
     "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^25.5.2",
+    "typescript": "^6.0.2"
   }
 }

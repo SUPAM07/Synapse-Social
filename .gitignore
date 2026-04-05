@@ -35,3 +35,7 @@ services/*/participants-*.csv
 backend/uploads/*.jpg
 backend/uploads/*.png
 backend/uploads/*.jpeg
+
+# TypeScript compiled output
+shared/dist/
+services/booking-service/dist/
