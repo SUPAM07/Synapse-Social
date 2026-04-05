@@ -85,7 +85,7 @@ services:
   # ── API Gateway ───────────────────────────────────────────────────────────────
   gateway:
     build:
-      context: ./gateway
+      context: ./backend/gateway
       dockerfile: Dockerfile
     container_name: ems-gateway
     ports:
@@ -116,7 +116,7 @@ services:
   # ── Microservices ─────────────────────────────────────────────────────────────
   auth-service:
     build:
-      context: ./services/auth-service
+      context: ./backend/services/auth-service
       dockerfile: Dockerfile
     container_name: ems-auth-service
     ports:
@@ -129,6 +129,7 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev_refresh_secret_change_me}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
       REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
     depends_on:
       mongo:
         condition: service_healthy
@@ -138,7 +139,7 @@ services:
 
   event-service:
     build:
-      context: ./services/event-service
+      context: ./backend/services/event-service
       dockerfile: Dockerfile
     container_name: ems-event-service
     ports:
@@ -149,6 +150,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev_secret_change_me}
       REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
+      KAFKA_DLQ_TOPIC: event-service.dlq
     depends_on:
       mongo:
         condition: service_healthy
@@ -160,7 +162,7 @@ services:
 
   booking-service:
     build:
-      context: ./services/booking-service
+      context: ./backend/services/booking-service
       dockerfile: Dockerfile
     container_name: ems-booking-service
     ports:
@@ -171,6 +173,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev_secret_change_me}
       REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
+      KAFKA_DLQ_TOPIC: booking-service.dlq
       EVENT_SERVICE_URL: http://event-service:3002
     depends_on:
       postgres:
@@ -183,7 +186,7 @@ services:
 
   review-service:
     build:
-      context: ./services/review-service
+      context: ./backend/services/review-service
       dockerfile: Dockerfile
     container_name: ems-review-service
     ports:
@@ -193,6 +196,7 @@ services:
       MONGO_URI: mongodb://mongo:27017/ems_reviews
       JWT_SECRET: ${JWT_SECRET:-dev_secret_change_me}
       KAFKA_BROKERS: kafka:29092
+      KAFKA_DLQ_TOPIC: review-service.dlq
     depends_on:
       mongo:
         condition: service_healthy
@@ -202,7 +206,7 @@ services:
 
   checkin-service:
     build:
-      context: ./services/checkin-service
+      context: ./backend/services/checkin-service
       dockerfile: Dockerfile
     container_name: ems-checkin-service
     ports:
@@ -212,6 +216,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev_secret_change_me}
       REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
+      KAFKA_DLQ_TOPIC: checkin-service.dlq
       CLIENT_URL: ${CLIENT_URL:-http://localhost:5173}
     depends_on:
       redis:
@@ -222,7 +227,7 @@ services:
 
   notification-service:
     build:
-      context: ./services/notification-service
+      context: ./backend/services/notification-service
       dockerfile: Dockerfile
     container_name: ems-notification-service
     ports:
@@ -230,6 +235,7 @@ services:
     environment:
       PORT: 3006
       KAFKA_BROKERS: kafka:29092
+      KAFKA_DLQ_TOPIC: notification-service.dlq
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
@@ -242,7 +248,7 @@ services:
 
   analytics-service:
     build:
-      context: ./services/analytics-service
+      context: ./backend/services/analytics-service
       dockerfile: Dockerfile
     container_name: ems-analytics-service
     ports:
@@ -251,6 +257,7 @@ services:
       PORT: 3007
       REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
+      KAFKA_DLQ_TOPIC: analytics-service.dlq
     depends_on:
       redis:
         condition: service_healthy

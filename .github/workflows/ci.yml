@@ -46,9 +46,9 @@ jobs:
     strategy:
       matrix:
         service:
-          - services/auth-service
-          - services/booking-service
-          - services/event-service
+          - backend/services/auth-service
+          - backend/services/booking-service
+          - backend/services/event-service
     defaults:
       run:
         working-directory: ${{ matrix.service }}
@@ -68,8 +68,8 @@ jobs:
     strategy:
       matrix:
         service:
-          - shared
-          - services/booking-service
+          - backend/shared
+          - backend/services/booking-service
     defaults:
       run:
         working-directory: ${{ matrix.service }}
@@ -89,14 +89,14 @@ jobs:
     strategy:
       matrix:
         service:
-          - gateway
-          - services/auth-service
-          - services/event-service
-          - services/booking-service
-          - services/review-service
-          - services/checkin-service
-          - services/notification-service
-          - services/analytics-service
+          - backend/gateway
+          - backend/services/auth-service
+          - backend/services/event-service
+          - backend/services/booking-service
+          - backend/services/review-service
+          - backend/services/checkin-service
+          - backend/services/notification-service
+          - backend/services/analytics-service
     defaults:
       run:
         working-directory: ${{ matrix.service }}
