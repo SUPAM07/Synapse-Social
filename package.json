@@ -1,0 +1,29 @@
+{
+  "name": "ems-root",
+  "version": "1.0.0",
+  "description": "Event Management System – monorepo root",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose up --build",
+    "dev:infra": "docker compose up zookeeper kafka mongo postgres redis",
+    "dev:gateway": "cd backend/gateway && npm run dev",
+    "dev:auth": "cd backend/services/auth-service && npm run dev",
+    "dev:event": "cd backend/services/event-service && npm run dev",
+    "dev:booking": "cd backend/services/booking-service && npm run dev",
+    "dev:review": "cd backend/services/review-service && npm run dev",
+    "dev:checkin": "cd backend/services/checkin-service && npm run dev",
+    "dev:notification": "cd backend/services/notification-service && npm run dev",
+    "dev:analytics": "cd backend/services/analytics-service && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "test": "npm run test --workspaces --if-present",
+    "test:auth": "cd backend/services/auth-service && npm test",
+    "test:booking": "cd backend/services/booking-service && npm test",
+    "test:event": "cd backend/services/event-service && npm test",
+    "build:shared": "cd backend/shared && npm run build",
+    "install:all": "npm install --prefix backend/shared && npm install --prefix backend/gateway && npm install --prefix backend/services/auth-service && npm install --prefix backend/services/event-service && npm install --prefix backend/services/booking-service && npm install --prefix backend/services/review-service && npm install --prefix backend/services/checkin-service && npm install --prefix backend/services/notification-service && npm install --prefix backend/services/analytics-service && npm install --prefix frontend",
+    "lint:frontend": "cd frontend && npm run lint",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  }
+}

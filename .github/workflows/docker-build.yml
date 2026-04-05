@@ -21,28 +21,28 @@ jobs:
       matrix:
         include:
           - service: gateway
-            context: ./gateway
+            context: ./backend/gateway
             image: ems-gateway
           - service: auth-service
-            context: ./services/auth-service
+            context: ./backend/services/auth-service
             image: ems-auth-service
           - service: event-service
-            context: ./services/event-service
+            context: ./backend/services/event-service
             image: ems-event-service
           - service: booking-service
-            context: ./services/booking-service
+            context: ./backend/services/booking-service
             image: ems-booking-service
           - service: review-service
-            context: ./services/review-service
+            context: ./backend/services/review-service
             image: ems-review-service
           - service: checkin-service
-            context: ./services/checkin-service
+            context: ./backend/services/checkin-service
             image: ems-checkin-service
           - service: notification-service
-            context: ./services/notification-service
+            context: ./backend/services/notification-service
             image: ems-notification-service
           - service: analytics-service
-            context: ./services/analytics-service
+            context: ./backend/services/analytics-service
             image: ems-analytics-service
           - service: frontend
             context: ./frontend
