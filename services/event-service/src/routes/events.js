@@ -15,6 +15,8 @@ import {
   trendingEvents,
   updateEventSeats,
 } from '../controllers/eventController.js';
+import { validate } from '../middleware/validate.js';
+import { createEventSchema, updateEventSchema, listEventsQuerySchema } from '../validators/index.js';
 
 const storage = multer.diskStorage({
   destination: env.uploadsDir,
@@ -26,11 +28,11 @@ const router = Router();
 
 router.get('/trending', trendingEvents);
 router.get('/search', searchEvents);
-router.get('/', listEvents);
+router.get('/', validate(listEventsQuerySchema, 'query'), listEvents);
 router.get('/:id', getEvent);
 
-router.post('/', authenticate, authorizeRoles('organizer', 'admin'), upload.single('poster'), createEvent);
-router.put('/:id', authenticate, authorizeRoles('organizer', 'admin'), upload.single('poster'), updateEvent);
+router.post('/', authenticate, authorizeRoles('organizer', 'admin'), upload.single('poster'), validate(createEventSchema), createEvent);
+router.put('/:id', authenticate, authorizeRoles('organizer', 'admin'), upload.single('poster'), validate(updateEventSchema), updateEvent);
 router.delete('/:id', authenticate, authorizeRoles('organizer', 'admin'), deleteEvent);
 
 // Admin approval

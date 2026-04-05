@@ -5,8 +5,13 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "start": "node dist/server.js",
+    "start:js": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "jest --config jest.config.cjs",
+    "test:coverage": "jest --config jest.config.cjs --coverage"
   },
   "dependencies": {
     "compression": "^1.8.1",
@@ -20,9 +25,24 @@
     "morgan": "^1.10.1",
     "pg": "^8.13.3",
     "qrcode": "^1.5.4",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
+    "@jest/globals": "^30.3.0",
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^25.5.2",
+    "@types/pg": "^8.20.0",
+    "@types/qrcode": "^1.5.6",
+    "babel-jest": "^30.3.0",
+    "jest": "^30.3.0",
+    "nodemon": "^3.1.10",
+    "typescript": "^6.0.2"
   }
 }
