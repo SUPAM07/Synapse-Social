@@ -1,0 +1,22 @@
+{
+  "name": "uevent-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "api-gateway",
+    "services/*",
+    "shared/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev:gateway": "npm run dev --workspace=api-gateway",
+    "dev:auth": "npm run dev --workspace=services/auth-service",
+    "dev:user": "npm run dev --workspace=services/user-service",
+    "dev:event": "npm run dev --workspace=services/event-service",
+    "dev:booking": "npm run dev --workspace=services/booking-service",
+    "dev:payment": "npm run dev --workspace=services/payment-service",
+    "dev:notification": "npm run dev --workspace=services/notification-service"
+  }
+}

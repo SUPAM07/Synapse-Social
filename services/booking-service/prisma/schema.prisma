@@ -1,0 +1,30 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  FAILED
+}
+
+model Booking {
+  id         String        @id @default(uuid())
+  userId     String
+  eventId    String
+  quantity   Int           @default(1)
+  totalPrice Float
+  status     BookingStatus @default(PENDING)
+  promoCode  String?
+  paymentId  String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@map("bookings")
+}

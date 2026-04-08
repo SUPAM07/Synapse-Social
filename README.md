@@ -1,8 +1,172 @@
 <head>
     <div align="center">
-        <h1 align="center">Uevent</h1>
+        <h1 align="center">Uevent — Event-Driven Microservices Platform</h1>
     </div>
 </head>
+
+## Architecture Overview
+
+```
+                         ┌──────────────┐
+         Client          │  API Gateway │  :3000
+         (React)  ──────▶│  (Express)   │◀──── Admin Panel
+                         └──────┬───────┘
+                                │  HTTP Proxy
+          ┌─────────────────────┼──────────────────────┐
+          │                     │                      │
+     ┌────▼────┐          ┌─────▼─────┐         ┌────▼────┐
+     │  Auth   │          │   User    │         │  Event  │
+     │ Service │          │  Service  │         │ Service │
+     │  :3001  │          │   :3002   │         │  :3003  │
+     └────┬────┘          └─────┬─────┘         └────┬────┘
+          │                     │                      │
+          └─────────────────────┼──────────────────────┘
+                                │
+                       ┌────────▼────────┐
+                       │   Apache Kafka  │
+                       │  (Event Bus)    │
+                       └────────┬────────┘
+                                │
+          ┌─────────────────────┼──────────────────────┐
+          │                     │                      │
+     ┌────▼────┐          ┌─────▼─────┐         ┌────▼────────┐
+     │Booking  │          │  Payment  │         │Notification │
+     │ Service │◀────────▶│  Service  │         │  Service    │
+     │  :3004  │          │   :3005   │         │    :3006    │
+     └────┬────┘          └─────┬─────┘         └─────────────┘
+          │(PostgreSQL)         │(PostgreSQL+Stripe)
+```
+
+## Services
+
+| Service | Port | Database | Description |
+|---|---|---|---|
+| **API Gateway** | 3000 | — | Reverse proxy, rate limiting, CORS |
+| **Auth Service** | 3001 | PostgreSQL | JWT auth, registration, password reset |
+| **User Service** | 3002 | PostgreSQL | User profiles, companies, subscriptions |
+| **Event Service** | 3003 | PostgreSQL | Events, formats, themes, comments |
+| **Booking Service** | 3004 | PostgreSQL | Bookings, status management |
+| **Payment Service** | 3005 | PostgreSQL + Stripe | Stripe payments, Kafka consumer |
+| **Notification Service** | 3006 | — | Email notifications via Nodemailer |
+
+## Event Flow
+
+```
+User creates booking
+        │
+        ▼
+  booking-service  ──[booking.initiated]──▶  payment-service
+                                                    │
+                          ┌─────────────────────────┤
+                          │                         │
+               [payment.processed]        [payment.failed]
+                          │                         │
+                          ▼                         ▼
+                  booking-service ──[booking.confirmed/cancelled]──▶ notification-service
+                                                                              │
+                                                                              ▼
+                                                                       Send Email
+```
+
+## Getting Started
+
+### Prerequisites
+- Docker & Docker Compose
+- Node.js 20+
+
+### Local Development with Docker Compose
+
+```bash
+cd infra/docker
+cp .env.example .env
+# Edit .env with your credentials
+docker compose up -d
+```
+
+API Gateway available at: `http://localhost:3000`
+
+### Individual Service Development
+
+```bash
+# Install dependencies for a specific service
+cd services/auth-service
+cp .env.example .env
+npm install
+npm run db:generate
+npm run dev
+```
+
+## API Gateway Routes
+
+| Method | Path | Service |
+|---|---|---|
+| `POST` | `/auth/register` | auth-service |
+| `POST` | `/auth/login` | auth-service |
+| `GET` | `/auth/confirm-email` | auth-service |
+| `POST` | `/auth/refresh` | auth-service |
+| `GET/PATCH` | `/users/:id` | user-service |
+| `GET` | `/me/profile` | user-service |
+| `GET/POST` | `/companies` | user-service |
+| `GET/POST` | `/events` | event-service |
+| `GET/POST` | `/formats` | event-service |
+| `GET/POST` | `/themes` | event-service |
+| `GET/POST` | `/bookings` | booking-service |
+| `GET` | `/payment/:id` | payment-service |
+| `GET` | `/health` | api-gateway (aggregated) |
+
+## Kafka Topics
+
+| Topic | Producer | Consumer |
+|---|---|---|
+| `user.registered` | auth-service | notification-service |
+| `user.updated` | auth/user service | — |
+| `event.created` | event-service | notification-service |
+| `booking.initiated` | booking-service | payment-service |
+| `booking.confirmed` | booking-service | notification-service |
+| `booking.cancelled` | booking-service | notification-service |
+| `payment.processed` | payment-service | booking-service, notification-service |
+| `payment.failed` | payment-service | booking-service, notification-service |
+
+## Deployment
+
+### Kubernetes with Helm
+
+```bash
+helm upgrade --install uevent infra/helm/uevent \
+  --namespace uevent \
+  --create-namespace \
+  --set authService.image.tag=v1.0.0
+```
+
+### CI/CD
+
+- **CI**: Runs on push to `main`/`develop` and PRs — lint, build, test, Docker image build
+- **CD**: Runs on version tags (`v*`) — builds and pushes images, deploys via Helm
+
+## Project Structure
+
+```
+uevent/
+├── api-gateway/          # API Gateway (port 3000)
+├── services/
+│   ├── auth-service/     # Auth service (port 3001)
+│   ├── user-service/     # User service (port 3002)
+│   ├── event-service/    # Event service (port 3003)
+│   ├── booking-service/  # Booking service (port 3004)
+│   ├── payment-service/  # Payment service (port 3005)
+│   ├── notification-service/ # Notification service (port 3006)
+│   └── legacy-api/       # Migration docs for old monolith
+├── shared/
+│   ├── kafka/            # @uevent/kafka — shared Kafka client
+│   └── utils/            # @uevent/utils — logger, error classes
+├── infra/
+│   ├── docker/           # Docker Compose for local dev
+│   ├── k8s/              # Kubernetes manifests
+│   └── helm/             # Helm chart
+├── client/               # React frontend (Vite + Chakra UI)
+├── admin/                # React Admin panel
+└── api/                  # Legacy monolith (see services/legacy-api/MIGRATION.md)
+```
 
 <div align="center">
   <img alt="Node.js" src="https://img.shields.io/badge/-Node.js-339933.svg?style=for-the-badge&logo=node.js&logoColor=white" />
