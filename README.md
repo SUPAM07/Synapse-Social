@@ -1,158 +1,73 @@
-# EventManager – Scalable Event Management Platform
+<head>
+    <div align="center">
+        <h1 align="center">Uevent</h1>
+    </div>
+</head>
 
-A production-grade, microservices-based event management platform built for scale.
+<div align="center">
+  <img alt="Node.js" src="https://img.shields.io/badge/-Node.js-339933.svg?style=for-the-badge&logo=node.js&logoColor=white" />
+  <img alt="Express" src="https://img.shields.io/badge/-Express-000000.svg?style=for-the-badge&logo=express&logoColor=white" />
+  <img alt="MySQL" src="https://img.shields.io/badge/-MySQL-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white" />
+  <img alt="Prisma" src="https://img.shields.io/badge/-Prisma-2D3748.svg?style=for-the-badge&logo=prisma&logoColor=white" />
+  <img alt="JSON Web Tokens" src="https://img.shields.io/badge/-JWT-000000.svg?style=for-the-badge&logo=JSONWebTokens&logoColor=white" />
+  <img alt=".ENV" src="https://img.shields.io/badge/-.ENV-ECD53F.svg?style=for-the-badge&logo=.ENV&logoColor=black" />
+  <img alt="Nodemon" src="https://img.shields.io/badge/-Nodemon-76D04B.svg?style=for-the-badge&logo=nodemon&logoColor=white" />
+  <img alt="Swagger" src="https://img.shields.io/badge/-Swagger-85EA2D.svg?style=for-the-badge&logo=Swagger&logoColor=black" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/-TypeScript-3178C6.svg?style=for-the-badge&logo=TypeScript&logoColor=white" />
+  <img alt="Vite" src="https://img.shields.io/badge/-Vite-646CFF.svg?style=for-the-badge&logo=Vite&logoColor=white" />
+  <img alt="react" src="https://img.shields.io/badge/-React-61DAFB.svg?style=for-the-badge&logo=react&logoColor=black" />
+  <img alt="redux" src="https://img.shields.io/badge/-Redux-764ABC.svg?style=for-the-badge&logo=redux&logoColor=white" />
+  <img alt="react router" src="https://img.shields.io/badge/-React%20Router-CA4245.svg?style=for-the-badge&logo=react-router&logoColor=white" />
+  <img alt="Chakra UI" src="https://img.shields.io/badge/-Chakra%20UI-319795.svg?style=for-the-badge&logo=ChakraUI&logoColor=white" />
+  <img alt="react admin" src="https://img.shields.io/badge/-React%20admin-1a237e.svg?style=for-the-badge&logo=react&logoColor=white" />
+  <img alt="Stripe" src="https://img.shields.io/badge/-Stripe-008CDD.svg?style=for-the-badge&logo=Stripe&logoColor=white" />
+  <img alt="Google Maps" src="https://img.shields.io/badge/-Google%20Maps-4285F4.svg?style=for-the-badge&logo=Google-Maps&logoColor=white" />
+</div>
 
-## Resume-Worthy Highlights
+<div align="center">
+  <h3>An event-booking application.</h3>
+  
+  <h3>Demo</h3>
+  <p><a href="https://youtu.be/nUErIMJcQec" target="_blank">Demo video</a></p>
+</div>
 
-- **Architected** a microservices-based event management system decomposing a monolithic backend into **7 independently deployable services** (Auth, Event, Booking, Review, Check-in, Notification, Analytics)
-- **Designed event-driven architecture** using **Kafka** for asynchronous processing, enabling real-time notifications, analytics aggregation, and decoupled service communication
-- **Implemented polyglot persistence**: MongoDB for flexible event/user data, **PostgreSQL** for transactional booking consistency (ACID), **Redis** for caching and rate limiting
-- **Built real-time QR-based check-in** using Socket.IO with **Redis adapter**, enabling horizontal scaling across multiple instances
-- **Engineered API Gateway** with JWT authentication, Redis-backed rate limiting, and service routing
-- **Engineered double-booking prevention** with PostgreSQL transaction isolation and unique constraints
-- **Containerized** all services with Docker multi-stage builds and orchestrated local development via Docker Compose
-- **CI/CD pipeline** with GitHub Actions: lint, build, Docker push to GHCR
+<br/>
 
----
+## Install & run
 
-## Architecture
+[Server](api/README.md)
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                  React Frontend (Vite + Nginx)                  │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              API Gateway  :3000                                 │
-│  JWT auth │ Rate limiting │ CORS │ Routing │ Logging            │
-└─────┬─────┬──────┬────────┬────────┬───────┬──────┬────────────┘
-      │     │      │        │        │       │      │
-   :3001  :3002  :3003    :3004    :3005   :3006  :3007
-   Auth  Event Booking  Review  Check-in  Notif Analytics
-                  │                │         ▲      ▲
-                  └────── Kafka ───┘─────────┘      │
-                                   └────────────────┘
-                                  (producers → consumers)
-┌─────────────────────────────────────────────────────────────────┐
-│  MongoDB  │  PostgreSQL  │  Redis  │  Kafka + Zookeeper         │
-└─────────────────────────────────────────────────────────────────┘
-```
+[Client](client/README.md)
 
-| Service | Port | Stack | Store |
-|---------|------|-------|-------|
-| API Gateway | 3000 | Express | Redis (rate limit) |
-| Auth | 3001 | Express | MongoDB + Redis |
-| Event | 3002 | Express | MongoDB + Redis cache |
-| Booking | 3003 | Express | **PostgreSQL** (ACID) |
-| Review | 3004 | Express | MongoDB |
-| Check-in | 3005 | Express + Socket.IO | Redis |
-| Notification | 3006 | Express | Kafka consumer |
-| Analytics | 3007 | Express | Kafka consumer + in-memory |
+[Admin panel](admin/README.md)
 
----
+<br/>
 
-## Quick Start (Docker)
+## Entity-relationship diagram
 
-```bash
-# Clone
-git clone <your-repo-url>
-cd event-manager
+![Entity-relationship diagram](https://user-images.githubusercontent.com/32570823/231519268-dd62702f-b62f-4f72-ac1e-0f76770859a5.png)
 
-# Configure
-cp .env.example .env
-# Edit JWT_SECRET, SMTP_* etc.
+## Client Use-case diagram
 
-# Launch all services
-docker compose up -d
+![use_case](https://user-images.githubusercontent.com/32570823/231520536-d8f04be2-98d5-4665-9697-db651fb9cefd.jpg)
 
-# Verify
-curl http://localhost:3000/api/health
-open http://localhost:5173
-```
+## Admin panel Use-case diagram
 
-## Quick Start (Local Dev)
+![use_case](https://user-images.githubusercontent.com/32570823/231520809-5d36f20c-04de-4498-9560-3af8b66d2162.jpg)
 
-```bash
-# Prerequisites: Node 20, MongoDB, PostgreSQL, Redis, (optional) Kafka
+<br/>
 
-# Install all service dependencies
-for dir in gateway services/*/; do (cd "$dir" && npm install); done
-cd frontend && npm install && cd ..
+## Snapshots
+### Login
+![2022-12-08](https://user-images.githubusercontent.com/32570823/231525820-cdcc36de-b9ce-4dc1-8cd2-190bef360596.gif)
 
-# Run each service (separate terminals or use a process manager)
-cd services/auth-service && PORT=3001 npm start
-cd services/event-service && PORT=3002 npm start
-cd services/booking-service && PORT=3003 npm start
-cd services/review-service && PORT=3004 npm start
-cd services/checkin-service && PORT=3005 npm start
-cd services/notification-service && PORT=3006 npm start
-cd services/analytics-service && PORT=3007 npm start
-cd gateway && PORT=3000 npm start
-cd frontend && npm run dev
-```
+### Home page
 
----
+#### gif
+![2022-12-08 (3)](https://user-images.githubusercontent.com/32570823/231530998-00b12d79-b4f0-4c98-acf7-cdef2c4ef25a.gif)
 
-## Project Structure
-
-```
-event-manager/
-├── services/
-│   ├── auth-service/          # JWT auth, refresh tokens, RBAC
-│   ├── event-service/         # CRUD, search, Redis caching
-│   ├── booking-service/       # PostgreSQL ACID bookings, QR
-│   ├── review-service/        # Ratings, aggregation
-│   ├── checkin-service/       # QR validation, Socket.IO
-│   ├── notification-service/  # Kafka → email
-│   └── analytics-service/     # Kafka → metrics
-├── gateway/                   # API Gateway
-├── shared/                    # Common utilities (JWT, Redis, Kafka, Logger)
-├── frontend/                  # React + Vite SPA
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── API_GATEWAY.md
-│   ├── SERVICES.md
-│   ├── DATABASE.md
-│   ├── DEPLOYMENT.md
-│   └── KAFKA_EVENTS.md
-├── docker-compose.yml
-├── .env.example
-└── README.md
-```
-
----
-
-## Documentation
-
-| Doc | Description |
-|-----|-------------|
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, service map, Kafka topics |
-| [API_GATEWAY.md](docs/API_GATEWAY.md) | Gateway routes, rate limits, config |
-| [SERVICES.md](docs/SERVICES.md) | Per-service API reference |
-| [DATABASE.md](docs/DATABASE.md) | MongoDB, PostgreSQL, Redis schemas |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker, local, AWS deployment |
-| [KAFKA_EVENTS.md](docs/KAFKA_EVENTS.md) | Event schema & consumer groups |
-
----
-
-## Demo Accounts (legacy monolith seed)
-
-| Role | Email | Password |
-|------|-------|----------|
-| Customer | customer@example.com | password |
-| Organizer | organizer@example.com | password |
-| Admin | admin@example.com | password |
-
----
-
-## Tech Stack
-
-**Backend:** Node.js 20, Express 5, Mongoose, `pg`, `kafkajs`, `ioredis`, `socket.io`, `jsonwebtoken`, `bcryptjs`, `nodemailer`, Winston  
-**Frontend:** React 19, Vite 7, Tailwind CSS, Axios, Socket.IO client  
-**Infrastructure:** Docker, Docker Compose, Kafka + Zookeeper, MongoDB 7, PostgreSQL 16, Redis 7  
-**CI/CD:** GitHub Actions (lint, build, Docker push to GHCR)
-
+#### png
+![2022-12-08 (3)](https://user-images.githubusercontent.com/32570823/231531670-d67a9769-25fe-4c3a-9167-d1638a7a1850.png)
 ---
 
 ## License
