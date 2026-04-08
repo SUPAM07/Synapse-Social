@@ -34,6 +34,14 @@ export class UserHandler {
     } catch (err) { next(err); }
   }
 
+  async getMyCompanies(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = (req as any).userId as string;
+      const companies = await userService.getUserCompanies(userId);
+      res.json({ data: companies });
+    } catch (err) { next(err); }
+  }
+
   async getUserCompanies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const companies = await userService.getUserCompanies(req.params['id'] as string);
