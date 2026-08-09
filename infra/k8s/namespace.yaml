@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: uevent
-  labels:
-    app.kubernetes.io/name: uevent
-    app.kubernetes.io/managed-by: helm
