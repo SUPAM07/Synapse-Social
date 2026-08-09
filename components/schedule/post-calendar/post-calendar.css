@@ -1,0 +1,100 @@
+/* calendar-overrides.css */
+.rbc-calendar { font-family: inherit; border: none !important; }
+.rbc-header {
+  padding: 8px !important;
+  font-weight: 500 !important;
+  font-size: 14px;
+  color: var(--color-muted-foreground);
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+/* .rbc-day-bg[data-past="true"] {
+  background-color: gray !important;
+  opacity: 0.5;
+  pointer-events: none;
+} */
+
+
+
+
+.rbc-time-header-content .rbc-header{
+  border-bottom:none !important;
+}
+
+.rbc-time-view .rbc-row {
+  border:none !important;
+  min-height: auto !important;
+}
+.rbc-time-slot  .rbc-label{
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rbc-timeslot-group{
+  min-height: 44px;
+}
+
+.rbc-month-view, .rbc-week-view, .rbc-time-view {
+  border: 1px solid var(--color-border) !important;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-card);
+}
+.rbc-day-bg + .rbc-day-bg, .rbc-month-row + .rbc-month-row {
+  border-left: 1px solid var(--color-border) !important;
+}
+.rbc-month-row,
+.rbc-time-content,
+.rbc-time-header-content,
+.rbc-time-view,
+.rbc-header + .rbc-header,
+.rbc-day-slot .rbc-time-slot,
+.rbc-timeslot-group,
+.rbc-time-content > * + * > * {
+  border-color: var(--color-border) !important;
+}
+.rbc-off-range-bg { background: transparent !important; }
+.rbc-today { background: transparent !important; }
+
+/* Allow calendar cells to scroll when there are many events */
+/* .rbc-day-bg {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+.rbc-event {
+  flex-shrink: 0 !important;
+} */
+.rbc-event {
+  background: var(--color-card) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-card-foreground) !important;
+  font-size: 11px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px color-mix(in oklab, black 12%, transparent);
+}
+
+.rbc-time-slot-disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.rbc-time-slot-disabled .rbc-label {
+  color: var(--color-muted-foreground) !important;
+}
+
+.rbc-time-view .rbc-header {
+  position: relative;
+}
+
+.rbc-time-view .rbc-header button {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.dark .rbc-month-view,
+.dark .rbc-week-view,
+.dark .rbc-time-view,
+.dark .rbc-header,
+.dark .rbc-event {
+  box-shadow: none;
+}
