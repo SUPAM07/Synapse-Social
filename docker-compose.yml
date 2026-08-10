@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    depends_on:
+      - inngest
+
+  inngest:
+    image: inngest/inngest:latest
+    ports:
+      - "8288:8288"
+    environment:
+      - INNGEST_DEV=1
