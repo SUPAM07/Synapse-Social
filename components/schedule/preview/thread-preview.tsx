@@ -25,7 +25,7 @@ export function ThreadPreview({ text, images, profileImage, handle }: ThreadPrev
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold">{handle || "Lemon"}</span>
+              <span className="text-sm font-semibold">{handle || "Synapse Social"}</span>
               <span className="text-xs text-muted-foreground">21h</span>
             </div>
             <p className="mt-1 text-sm leading-normal whitespace-pre-wrap break-words">

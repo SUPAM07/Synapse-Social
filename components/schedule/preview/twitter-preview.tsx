@@ -20,8 +20,8 @@ export function TwitterPreview({ text, images,profileImage,handle }: TwitterPrev
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold">{handle || "Lemon"}</span>
-              <span className="text-xs text-muted-foreground">@{handle || "lemon"}</span>
+              <span className="text-sm font-bold">{handle || "Synapse Social"}</span>
+              <span className="text-xs text-muted-foreground">@{handle || "synapsesocial"}</span>
             </div>
             <p className="mt-1 text-sm whitespace-pre-wrap break-words">
               {text || <span className="text-muted-foreground italic">Nothing yet…</span>}

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
         const key = `images/${userId}/${Date.now()}-${sanitizeFileName(file.name)}`;
         const { data, error } = await insforge.storage
-            .from("lemon")
+            .from("synapse-social")
             .upload(key, file);
 
         if (error) {

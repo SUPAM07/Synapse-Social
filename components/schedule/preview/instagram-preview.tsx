@@ -43,7 +43,7 @@ export function InstagramPreview({ text, images }: InstagramPreviewProps) {
               <AvatarImage src="./images/avatar.webp" />
               <AvatarFallback>LM</AvatarFallback>
             </Avatar>
-            <span className="text-sm font-semibold">Lemon</span>
+            <span className="text-sm font-semibold">Synapse Social</span>
           </div>
           <MoreHorizontal className="size-5 text-muted-foreground" />
         </div>
@@ -106,7 +106,7 @@ export function InstagramPreview({ text, images }: InstagramPreviewProps) {
 
           {/* Caption */}
           <div className="text-sm">
-            <span className="font-semibold mr-2">Lemon</span>
+            <span className="font-semibold mr-2">Synapse Social</span>
             {!text ? (
               <span className="text-muted-foreground italic">Nothing yet…</span>
             ) : text.length > CHAR_LIMIT && !isExpanded ? (

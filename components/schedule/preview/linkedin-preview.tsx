@@ -24,7 +24,7 @@ export function LinkedinPreview({ text, images, profileImage, handle }: Linkedin
               <AvatarFallback>LM</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-              <h4 className="text-[14px] font-semibold leading-tight">{handle || "Lemon"}</h4>
+              <h4 className="text-[14px] font-semibold leading-tight">{handle || "Synapse Social"}</h4>
              <span className="flex items-center gap-1 mt-1 
               text-muted-foreground text-xs">
                 1h ·

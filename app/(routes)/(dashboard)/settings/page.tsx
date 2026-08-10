@@ -88,7 +88,7 @@ const SettingsPage = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Appearance</CardTitle>
-                  <CardDescription>Customize how Lemon AI looks for you</CardDescription>
+                  <CardDescription>Customize how Synapse Social looks for you</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">

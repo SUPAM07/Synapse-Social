@@ -73,7 +73,7 @@ export function YoutubePreview({ text, images }: YoutubePreviewProps) {
                 <AvatarImage src="./images/avatar.webp" />
                 <AvatarFallback>LM</AvatarFallback>
               </Avatar>
-              <span className="text-white text-[14px] font-bold">@lemon</span>
+              <span className="text-white text-[14px] font-bold">@synapsesocial</span>
               <button className="ml-1 bg-white text-black text-[12px] font-bold px-3 py-1.5 rounded-full hover:bg-white/90 transition-colors">
                 Subscribe
               </button>

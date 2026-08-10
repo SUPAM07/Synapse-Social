@@ -20,8 +20,8 @@ export function BlueSkyPreview({ text, images, profileImage, handle }: BlueSkyPr
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1 leading-none">
-              <span className="text-[15px] font-bold">{handle || "Lemon"}</span>
-              <span className="text-[14px] text-muted-foreground truncate">@{handle || "lemon.bsky.social"}</span>
+              <span className="text-[15px] font-bold">{handle || "Synapse Social"}</span>
+              <span className="text-[14px] text-muted-foreground truncate">@{handle || "synapse.bsky.social"}</span>
               <span className="text-[14px] text-muted-foreground">· 21h</span>
             </div>
             

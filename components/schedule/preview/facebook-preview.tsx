@@ -24,7 +24,7 @@ export function FacebookPreview({ text, images, profileImage, handle }: Facebook
               <AvatarFallback>LM</AvatarFallback>
             </Avatar>
             <div>
-              <h4 className="text-[15px] font-semibold leading-none">{handle || "Lemon"}</h4>
+              <h4 className="text-[15px] font-semibold leading-none">{handle || "Synapse Social"}</h4>
               <span className="flex items-center gap-1 mt-1 
               text-muted-foreground text-xs">
                 Just Now ·
